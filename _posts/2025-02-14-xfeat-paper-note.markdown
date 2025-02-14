@@ -8,8 +8,9 @@ xfeat是面向轻量级的图像匹配的加速特征，
 它的特点就是轻量化，paper指出“在速度上超过了当前基于深度学习的局部特征(快了5倍)，具有可比或更好的精度，在姿态估
 计和视觉定位方面得到了证明。“
 XFeat被设计为与硬件无关的，确保了跨平台的广泛适用性，但这并不排除在特定硬件配置上优化XFeat的可能性。
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/ca91d4f3c86949f690e732ba270b6e47.png)
+![Image](https://github.com/user-attachments/assets/67de67fa-ad61-4d4f-8a24-881ffb317854)
 它的主要贡献点：
+
 1. 一种新的轻量级CNN架构，可以部署在资源受限的平台和需要高吞吐量或计算效率的下游任务上，而不需要耗时的特定硬件优化。所提出方法可以在视觉定位和相机姿态估计等几个下游任务中随时替换现有的轻量级手工解决方案、昂贵的深度模型和轻量级深度模型;
 2. 设计了一个极简的、可学习的关键点检测分支，快速适用于小型提取器骨干，显示了其在视觉定位、相机姿态估计和单应性配准方面的有效性;
 3. 最后，提出了一种新的匹配细化模块，用于从粗糙的半稠密匹配中获取像素级偏移量。与现有的技术相比, 新策略不需要高分辨率的特
@@ -17,7 +18,7 @@ XFeat被设计为与硬件无关的，确保了跨平台的广泛适用性，但
 
 加速策略：
 1.骨干网络
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/fd0a2dd0bb1b460789d9b05738eaf196.png)
+![Image](https://github.com/user-attachments/assets/10a6f50b-c32c-4067-aa2f-c07c4cf181be)
 
 为了降低CNN处理成本，一种常见的方法是从浅层卷积开始，然后增量地将空间维度减半(H i , W i )，同时在i-th卷积块中将通道数C i 加倍。这是我们经常见到的做法。
 第i 层layer的计算量为$F_{ops}$, 我们来理解一下它是如何计算的，假设kernel size为k * k,
@@ -27,7 +28,7 @@ XFeat被设计为与硬件无关的，确保了跨平台的广泛适用性，但
 作者提到在整个网络上对通道进行朴素剪枝C损害了其处理诸如变化的光照和视角等挑战的能力，深度可分离卷积虽然可以把$F_{ops}$减少多达9倍，但在局部特征提取中，较浅的网络处理较大的图像分辨率，与它们最初在分类和目标检测等低分辨率场景的使用相比，效果较差。
 所以$H_{i} * W_{i}$称为计算瓶颈。
 
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/d35100a67ee0449d8155977d1a1bd90e.png)![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/3ced6d24c7f14256b3d81e671ac8f765.png)
+![Image](https://github.com/user-attachments/assets/4a2649bc-5305-4f88-920b-2c9c87b2255f)![Image](https://github.com/user-attachments/assets/5fb6de2d-b33a-47c4-b645-1708de1285ad)
 这里可以看到它的网络结构
 
 ![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/1acd9132191b4c9f94f11c783a6d3afc.png)
