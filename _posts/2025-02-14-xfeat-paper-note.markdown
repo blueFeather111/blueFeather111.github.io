@@ -1,3 +1,8 @@
+---
+layout: post
+title: "Xfeat paper note"
+date: 2025-02-14
+---
 xfeat是面向轻量级的图像匹配的加速特征，
 像superpoint这些特征一样，它提取keypoint的坐标，描述子，score等信息，用于图像特征点提取，匹配，定位等。
 它的特点就是轻量化，paper指出“在速度上超过了当前基于深度学习的局部特征(快了5倍)，具有可比或更好的精度，在姿态估
