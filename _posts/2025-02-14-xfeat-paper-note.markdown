@@ -9,7 +9,7 @@ xfeat是面向轻量级的图像匹配的加速特征，
 计和视觉定位方面得到了证明。“
 XFeat被设计为与硬件无关的，确保了跨平台的广泛适用性，但这并不排除在特定硬件配置上优化XFeat的可能性。
 
-![Image](https://i-blog.csdnimg.cn/direct/ca91d4f3c86949f690e732ba270b6e47.png)
+<img src="asset/image/1.png")
 
 它的主要贡献点：
 
