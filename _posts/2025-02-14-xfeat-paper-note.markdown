@@ -20,7 +20,7 @@ XFeat被设计为与硬件无关的，确保了跨平台的广泛适用性，但
 
 加速策略：
 1.骨干网络
-![Image](https://github.com/user-attachments/assets/10a6f50b-c32c-4067-aa2f-c07c4cf181be)
+![图片描述](/assets/image/2.png)
 
 为了降低CNN处理成本，一种常见的方法是从浅层卷积开始，然后增量地将空间维度减半(H i , W i )，同时在i-th卷积块中将通道数C i 加倍。这是我们经常见到的做法。
 第i 层layer的计算量为$F_{ops}$, 我们来理解一下它是如何计算的，假设kernel size为k * k,
@@ -30,11 +30,14 @@ XFeat被设计为与硬件无关的，确保了跨平台的广泛适用性，但
 作者提到在整个网络上对通道进行朴素剪枝C损害了其处理诸如变化的光照和视角等挑战的能力，深度可分离卷积虽然可以把$F_{ops}$减少多达9倍，但在局部特征提取中，较浅的网络处理较大的图像分辨率，与它们最初在分类和目标检测等低分辨率场景的使用相比，效果较差。
 所以$H_{i} * W_{i}$称为计算瓶颈。
 
-![Image](https://github.com/user-attachments/assets/4a2649bc-5305-4f88-920b-2c9c87b2255f)![Image](https://github.com/user-attachments/assets/5fb6de2d-b33a-47c4-b645-1708de1285ad)
+![图片描述](/assets/image/3.png)
+
+![图片描述](/assets/image/4.png)
+
 这里可以看到它的网络结构
 
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/1acd9132191b4c9f94f11c783a6d3afc.png)
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/400b46dac8d84af78cb3ff6349b497e1.png)
+![图片描述](/assets/image/5.png)
+![图片描述](/assets/image/6.png)
 从结构图可以看出，特征点的提取并不经过backbone网络，而是直接从图像提取，这样可以直接关注低层次的局部特征，而不是高维语义特征。并且与描述子提取，置信度预测解耦，避免任务间的梯度冲突。
 把input图像表示为每个网格单元上8x8像素组成的2D网格，也就是H * W -> H/8 * W/8 * 64， 经过4个1x1卷积后，得到H/8 * W/8 * (64+1), 
 +1是一个垃圾箱，表示有没有找到关键点，推理过程中，垃圾箱丢弃，只用64.
@@ -69,7 +72,7 @@ MegaDepth 提供了丰富的场景多样性，有助于训练模型在大视角�
 4（Warped COCO）： 提供大规模的几何变换数据，提高模型对极端变换的容忍度。
 
 **训练描述子F**
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/58e8610224274182b30bbcab64319b77.png)
+![图片描述](/assets/image/7.png)
 ground truth是N*4的keypoint坐标，前两个是图片I1中的特征点坐标，后两个是对应的图片I2中的。
 但注意到特征点坐标是对应原图尺寸H * W, 而描述子F的尺寸是H/8 * W/8 * 64, 可能需要把ground truth坐标做下采样对应到F，
 取出I1， I2坐标对应的F(i), 得到F1， F2，都是Nx64.
@@ -83,11 +86,11 @@ Reliability Map R 本质上衡量的是特征点的质量，即特征点的可�
 
 R也是通过网络学习出来的。
 这个损失函数设计得很有意思。
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/ec4a5f066d804cfbac54aa5cfebbd03d.png)
+![图片描述](/assets/image/8.png)
 注意到损失函数中有的R头上没有横线，有的R头上有个横线。
 头上没有横线的R就是网络学习出来的，有横线的是通过F计算出来的dual-softmax.
 前面说了S是根据ground truth提取出来的成对的描述子算出来的相似性矩阵，也就是不同特征对间的相似性分数，分数越高越匹配。
-R1（头上有横线）表示F1匹配F2， R2（头上有横线）表示F2匹配F1，（softmax分别对S的行和列归一化）
+R1（头上有横线）表示F1匹配F2， R2（头上有横线）表示F2匹配F1，（softmax分别对S的行和列归一化)
 当F1和F2双向都匹配的时候，R1和R2的乘积才会大，只要有一方面不匹配，分数小，就会把乘积拉低。因此用Hadamard product就是用来衡量双向匹配的。
 Hadamard 积是对两个向量或矩阵的逐元素相乘操作。
 
@@ -110,8 +113,8 @@ R1和R2（头顶上有线），是对行求max, 所以算出来的应该是1 * R
 我猜测ground truth是这样得到的，匹配点(x1, y1) 和 (x2, y2), 下采样8倍得到粗匹配的点(x1/ 8, y1 / 8), (x2 /8, y2/ 8), 这也是用于训练匹配的点。offset可能是把图片2，也就是用于和图片1匹配的图片，的(x2 /8, y2/8)复原到原尺寸，看和初始的(x2, y2)偏移了多少，得到offset.
 由于是下采样8倍，offset范围在8 * 8. 所以预测的就是8 * 8的网格图。
 
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/22d4c33e9fcd449b83a94bc47d1e52cd.png)
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/8708875393dc4c909e59e98b38cd833a.png)
+![图片描述](/assets/image/9.png)
+![图片描述](/assets/image/10.png)
 
 ground truth中为图片1和图片2的互相匹配的特征点坐标，用这些坐标从F1，F2中采样到对应的特征点的64维的描述子fa, fb. 。
 注意坐标要下采样8倍和F的尺寸匹配。
@@ -119,14 +122,14 @@ ground truth中为图片1和图片2的互相匹配的特征点坐标，用这些
 
 训练时用到ground truth的offset, 计算NLL损失。其中o就是8x8的grid.
 
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/129d901aaf0d47e0bdb5179afb8813c8.png)
+![图片描述](/assets/image/11.png)
 
 
 ### 训练keypoints
 keypoint的训练是蒸馏ALIKE的特征点，keypoint的提取不在backbone, 而是一个独立的小网络，直接从原图重新调整的结构出发，
 可以集中提取lower level的信息。
 
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/6931a610eb604dcf9ce2acabb8b83f42.png)
+![图片描述](/assets/image/12.png)
 
 这段话我的理解是把ALIKE提取的特征点坐标map到 H/8 * W/8 上，我们需要的是一个offset,
 就是判断(x, y)坐标会落到哪个8x8的grid里，然后计算和当前grid左上角的offset, 得到(tx, ty),
@@ -139,14 +142,13 @@ keypoint的训练是蒸馏ALIKE的特征点，keypoint的提取不在backbone, �
 图像中大多数区域都没有关键点，导致“垃圾桶”类别的样本过多，产生类别不平衡。如果直接训练，模型会倾向于总是预测“没有关键点”，这样轻易就能获得较低的损失。
 paper中的解决方法是对没有关键点的样本设置上限，具体来说，可能是设置了一个上限，比如每个batch最多选择500个没有关键点的样本，如果没有关键点的样本超出了上限，就随机丢弃多余的样本。
 
-
 最后总的loss就是descriptor的loss, reliability map的loss, 特征点精匹配的offset的loss, 和keypoint loss之和。
 加权重。
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/0720137f45544c0abafb98d2bf62068f.png)
+![图片描述](/assets/image/13.png)
 
 ### 推理阶段
 
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/66ced6869351475da8830b00cceb5864.png)
+![图片描述](/assets/image/14.png)
 
 这里介绍了两个方法的推理，一个是稀疏XFeat, 另一个是半稠密的XFeat*,
 先介绍**XFeat.**
@@ -160,16 +162,16 @@ paper中的解决方法是对没有关键点的样本设置上限，具体来说
 2.什么是双三次插值？
 插值过程使用 16 个邻近的像素（即 4×4 区域）来估算目标位置的值。
 keypoint的坐标是亚像素级，可能包含小数。
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/32c41de54df2491d8f8e8def8192473a.png)
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/191944e637d74763bc9c0ea319e092d4.png)
+![图片描述](/assets/image/15.png)
+![图片描述](/assets/image/16.png)
 下面举个例子说明：
 
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/c61e252a7712477b8aea5cf6f6298cc4.png)
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/b0b57463e2c94d00a66e274848c45235.png)
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/78058adefaa046c3a2a1b2ada8b34939.png)
+![图片描述](/assets/image/17.png)
+![图片描述](/assets/image/18.png)
+![图片描述](/assets/image/19.png)
 上面是一维的情况，现在拓展到descriptor F,
 
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/9be686b89fb9405babb66f6f5ad16b1d.png)
+![图片描述](/assets/image/20.png)
 相当于把前面grid中的每个数字换成了64维的向量，用向量作乘加。
 
 3.为什么要对F做插值计算？
@@ -183,8 +185,8 @@ keypoint的坐标是亚像素级，可能包含小数。
 也就是Mutual Nearest Neighbor(MNN) search, 是一种用于特征匹配的策略，通常在图像特征点匹配任务中使用.
 
 下面来比较NN和MNN：
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/91bcdf54cbad48908763978df1cfc316.png)
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/6c88072609534f40a57daee0ee10d2de.png)
+![图片描述](/assets/image/21.png)
+![图片描述](/assets/image/22.png)
 单向最近邻搜索可能会导致误匹配，MNN 搜索增加了一致性约束，过滤掉了一些错误匹配对。
 
 再说**XFeat***.
