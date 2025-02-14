@@ -29,6 +29,13 @@ url: "https://blueFeather111.github.io" # the base hostname & protocol for your 
 twitter_username: jekyllrb
 github_username:  jekyll
 
+markdown: kramdown
+kramdown:
+  parse_block_html: true
+  math_engine: mathjax
+
+img_cdn: ''
+
 # Build settings
 theme: minima
 plugins:
